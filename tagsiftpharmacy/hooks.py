@@ -129,9 +129,9 @@ app_license = "mit"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Web Form":"tagsiftpharmacy.web_form.CustomWebForm"
+}
 
 # Document Events
 # ---------------
@@ -206,7 +206,16 @@ app_license = "mit"
 
 # User Data Protection
 # --------------------
-
+fixtures = [
+    {
+        "dt":"Custom Field",
+        "filters":[["module","=","Tagsiftpharmacy"]]
+    },
+    {
+        "dt":"Web Form",
+        "filters":[["module","=","Tagsiftpharmacy"]]
+    },
+]
 # user_data_fields = [
 # 	{
 # 		"doctype": "{doctype_1}",

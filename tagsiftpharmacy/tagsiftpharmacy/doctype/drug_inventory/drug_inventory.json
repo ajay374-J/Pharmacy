@@ -13,7 +13,8 @@
    "default": "Today",
    "fieldname": "posting_date",
    "fieldtype": "Date",
-   "label": "Posting Date"
+   "label": "Posting Date",
+   "read_only": 1
   },
   {
    "fieldname": "drug_details",
@@ -22,10 +23,9 @@
    "options": "Controlled Inventory C2"
   }
  ],
- "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-09 21:38:04.641439",
+ "modified": "2025-04-10 08:06:32.223101",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "Drug Inventory",
@@ -44,7 +44,6 @@
    "write": 1
   }
  ],
- "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

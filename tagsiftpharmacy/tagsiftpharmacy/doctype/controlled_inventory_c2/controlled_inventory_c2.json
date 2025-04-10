@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2025-04-09 19:48:05.488754",
+ "creation": "2025-04-10 07:44:25.126818",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -21,6 +21,7 @@
    "label": "Add Controlled Inventory"
   },
   {
+   "columns": 1,
    "fieldname": "ndc",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -28,6 +29,7 @@
    "options": "Item"
   },
   {
+   "columns": 2,
    "fetch_from": "ndc.item_name",
    "fieldname": "drug_name",
    "fieldtype": "Data",
@@ -36,42 +38,58 @@
    "read_only": 1
   },
   {
+   "columns": 1,
+   "fetch_from": "ndc.custom_class",
    "fieldname": "class",
-   "fieldtype": "Int",
-   "label": "CLASS"
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "CLASS",
+   "options": "Class",
+   "read_only": 1
   },
   {
+   "columns": 1,
    "fieldname": "count_type",
-   "fieldtype": "Data",
-   "label": "COUNT TYPE"
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "COUNT TYPE",
+   "options": "EXACT\nDefaulted\nLater"
   },
   {
+   "columns": 2,
+   "fetch_from": "ndc.custom_manufacturer",
    "fieldname": "manufurturer",
    "fieldtype": "Data",
-   "label": "MANUFURTURER"
+   "in_list_view": 1,
+   "label": "MANUFACTURER",
+   "read_only": 1
   },
   {
+   "columns": 1,
+   "fetch_from": "ndc.custom_package_size",
    "fieldname": "package_size",
    "fieldtype": "Int",
-   "label": "PACKAGE SIZE"
+   "in_list_view": 1,
+   "label": "PACKAGE SIZE",
+   "read_only": 1
   },
   {
+   "columns": 2,
    "fieldname": "inventory_on_hand",
-   "fieldtype": "Data",
+   "fieldtype": "Float",
+   "in_list_view": 1,
    "label": " INVENTORY ON HAND"
   }
  ],
- "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-04-09 21:41:31.211560",
+ "modified": "2025-04-10 23:39:11.627199",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "Controlled Inventory C2",
- "owner": "jaideeprda@gmail.com",
+ "owner": "Administrator",
  "permissions": [],
- "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

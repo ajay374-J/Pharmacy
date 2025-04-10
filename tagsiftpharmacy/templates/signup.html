@@ -1,0 +1,211 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combined Pharmacy/Pharmacist Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .label-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        label {
+            font-weight: bold;
+            min-width: 120px; 
+            margin-bottom: 0;
+        }
+        input, select {
+            flex: 1;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .radio-group {
+            margin-bottom: 10px;
+        }
+        .radio-group input {
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            display: none;
+        }
+        .notes {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        
+        .address-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+    </style>
+
+<!-- {% extends "templates/web.html" %}
+
+{% block page_content %} -->
+
+</head>
+<body>
+    <form id="combinedForm" onsubmit="return validateForm(event)">
+        <div class="form-group">
+            <label>Select Type *</label>
+            <div class="radio-group">
+                <input type="radio" id="pharmacy" name="type" value="Pharmacy" checked onclick="toggleFields()">
+                <label for="pharmacy">Pharmacy</label>
+                <input type="radio" id="pharmacist" name="type" value="Pharmacist" onclick="toggleFields()">
+                <label for="pharmacist">Pharmacist</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="label-input"><label for="name">Full Name *</label><input type="text" id="name" placeholder="Full Name" required></div>
+            <div class="label-input"><label for="email">Email *</label><input type="email" id="email" placeholder="Email" required></div>
+        </div>
+        <div class="form-group">
+            <div class="label-input"><label for="address1">Address *</label><input type="text" id="address1" placeholder="Address Line 1" required></div>
+            <div class="label-input"><label></label><input type="text" id="address2" placeholder="Address Line 2"></div>
+            <div class="label-input"><label for="city">City/District</label><input type="text" id="city" placeholder="City/District" required></div>
+            <div class="label-input"><label for="state">State/Province</label><input type="text" id="state" placeholder="State/Province" required></div>
+            <div class="label-input"><label for="postalCode">Postal Code</label><input type="text" id="postalCode" placeholder="Postal Code" required></div>
+            <div class="label-input"><label for="country">Country</label>
+                <select id="country" required>
+                    <option value="">Select Country</option>
+                    <option value="United States">United States</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="label-input"><label for="phone">Phone Number *</label><input type="tel" id="phone" placeholder="+1 516-728-1635" required></div>
+            <div class="label-input"><label for="fax">Fax Number *</label><input type="tel" id="fax" placeholder="+1 631-948-8990" required></div>
+        </div>
+        <div id="pharmacyFields" class="form-group">
+            <div class="label-input"><label for="npi">NPI Number</label><input type="text" id="npi" placeholder="12312312311" required></div>
+            <span id="npiError" class="error">NPI number should be 11 digits</span>
+            <div class="label-input"><label for="nabp">NABP (NCPDP) Number</label><input type="text" id="nabp" placeholder="1234567" required></div>
+            <span id="nabpError" class="error">NABP number should be 7 digits</span>
+        </div>
+        <div id="pharmacistFields" class="form-group hidden">
+            <div class="label-input"><label for="license">License Number</label><input type="text" id="license" required></div>
+            <div class="label-input"><label for="licenseState">License State</label>
+                <select id="licenseState" required>
+                    <option value="">-Select-</option>
+                    <option value="AL">Alabama</option>
+                    <option value="AK">Alaska</option>
+                    <option value="AZ">Arizona</option>
+                
+                </select>
+            </div>
+        </div>
+        <button type="submit">Update</button>
+        <button type="button" onclick="resetForm()">Cancel</button>
+        <div class="notes" id="pharmacyNotes">
+            <ul>
+                <li>NPI number should be 11 digits</li>
+                <li>NABP number should be 7 digits</li>
+            </ul>
+        </div>
+        <div class="notes hidden" id="pharmacistNotes">
+            <ul>
+                <li>License Number should be of how many characters?</li>
+                <li>License State field should have list of all states in US?</li>
+                <li>Google MFA authentication</li>
+            </ul>
+        </div>
+    </form>
+
+    <!-- {% endblock %} -->
+
+
+
+    <script>
+        function toggleFields() {
+            const pharmacySelected = document.getElementById('pharmacy').checked;
+            const pharmacistSelected = document.getElementById('pharmacist').checked;
+
+            document.getElementById('pharmacyFields').classList.toggle('hidden', pharmacistSelected);
+            document.getElementById('pharmacistFields').classList.toggle('hidden', pharmacySelected);
+            document.getElementById('pharmacyNotes').classList.toggle('hidden', pharmacistSelected);
+            document.getElementById('pharmacistNotes').classList.toggle('hidden', pharmacySelected);
+        }
+
+        function validateForm(event) {
+            event.preventDefault();
+            let isValid = true;
+
+            const pharmacySelected = document.getElementById('pharmacy').checked;
+            const pharmacistSelected = document.getElementById('pharmacist').checked;
+
+            if (pharmacySelected) {
+                const npi = document.getElementById('npi').value.replace(/\D/g, '');
+                if (npi.length !== 11) {
+                    document.getElementById('npiError').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('npiError').style.display = 'none';
+                }
+
+                const nabp = document.getElementById('nabp').value.replace(/\D/g, '');
+                if (nabp.length !== 7) {
+                    document.getElementById('nabpError').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('nabpError').style.display = 'none';
+                }
+            } else if (pharmacistSelected) {
+                const license = document.getElementById('license').value;
+                const licenseState = document.getElementById('licenseState').value;
+                if (!license || !licenseState || licenseState === '-Select-') {
+                    alert('Please fill all required fields for Pharmacist.');
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                alert('Form submitted successfully!');
+                resetForm();
+            }
+            return isValid;
+        }
+
+        function resetForm() {
+            document.getElementById('combinedForm').reset();
+            document.getElementById('npiError').style.display = 'none';
+            document.getElementById('nabpError').style.display = 'none';
+            document.getElementById('pharmacy').checked = true;
+            toggleFields();
+        }
+
+        window.onload = toggleFields;
+    </script>
+</body>
+</html>
+
