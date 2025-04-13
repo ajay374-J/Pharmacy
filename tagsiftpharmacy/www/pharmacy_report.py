@@ -14,7 +14,7 @@ def get_stock_entry_items(from_date=None):
 
         data = frappe.db.get_all(
             "Controlled Inventory C2",
-            fields=["ndc", "drug_name", "class", "count_type", "manufurturer", "package_size", "inventory_on_hand"],
+            fields=["ndc", "drug_name", "class", "count_type", "manufacturer", "package_size", "inventory_on_hand"],
             filters=filters
         )
 
