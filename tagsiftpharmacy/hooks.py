@@ -215,6 +215,17 @@ fixtures = [
         "dt":"Web Form",
         "filters":[["module","=","Tagsiftpharmacy"]]
     },
+     {
+        "dt":"Role",
+        "filters":[["name","=","Pharmacy User"]]
+    },
+     {
+        "dt":"Custom DocPerm",
+        "filters":[["role","=","Pharmacy User"]]
+    },
+
+
+    
 ]
 # user_data_fields = [
 # 	{

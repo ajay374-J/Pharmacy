@@ -81,13 +81,13 @@
    "label": "Fax Number"
   },
   {
-   "depends_on": "eval:doc.user_type==\"Pharmacy\"",
+   "depends_on": "eval:doc.user_type==\"Pharmacist\"",
    "fieldname": "license_number",
    "fieldtype": "Data",
    "label": "License Number"
   },
   {
-   "depends_on": "eval:doc.user_type==\"Pharmacy\"",
+   "depends_on": "eval:doc.user_type==\"Pharmacist\"",
    "fieldname": "license_state",
    "fieldtype": "Data",
    "label": "License State"
@@ -114,7 +114,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-13 07:45:06.444784",
+ "modified": "2025-04-13 18:00:36.888612",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "User Details",

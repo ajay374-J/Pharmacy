@@ -12,5 +12,8 @@ class UserDetails(Document):
 		doc.first_name=self.user_name
 		doc.username=self.user_name
 		doc.user_type="Website User"
+		doc.append("roles",{
+			"role":"Pharmacy User"
+		})
 		doc.save(ignore_permissions=True)
 		self.db_set("user",doc.name)
