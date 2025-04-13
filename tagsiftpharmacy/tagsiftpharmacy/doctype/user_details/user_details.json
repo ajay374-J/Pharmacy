@@ -1,0 +1,139 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-13 00:17:36.234399",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user_type",
+  "user_name",
+  "fax_number",
+  "license_number",
+  "column_break_quze",
+  "email",
+  "phone_number",
+  "license_state",
+  "user",
+  "section_break_ojkb",
+  "address_line_1",
+  "stateprovince",
+  "postal_code",
+  "column_break_wcqa",
+  "address_line_2",
+  "citydistrict",
+  "country"
+ ],
+ "fields": [
+  {
+   "fieldname": "user_type",
+   "fieldtype": "Select",
+   "label": "User Type",
+   "options": "Pharmacy\nPharmacist"
+  },
+  {
+   "fieldname": "user_name",
+   "fieldtype": "Data",
+   "label": "User Name"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1"
+  },
+  {
+   "fieldname": "address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "citydistrict",
+   "fieldtype": "Data",
+   "label": "City/District"
+  },
+  {
+   "fieldname": "stateprovince",
+   "fieldtype": "Data",
+   "label": "State/Province"
+  },
+  {
+   "fieldname": "postal_code",
+   "fieldtype": "Data",
+   "label": "Postal Code"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "fax_number",
+   "fieldtype": "Data",
+   "label": "Fax Number"
+  },
+  {
+   "depends_on": "eval:doc.user_type==\"Pharmacy\"",
+   "fieldname": "license_number",
+   "fieldtype": "Data",
+   "label": "License Number"
+  },
+  {
+   "depends_on": "eval:doc.user_type==\"Pharmacy\"",
+   "fieldname": "license_state",
+   "fieldtype": "Data",
+   "label": "License State"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_quze",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ojkb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_wcqa",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-04-13 07:45:06.444784",
+ "modified_by": "Administrator",
+ "module": "Tagsiftpharmacy",
+ "name": "User Details",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
