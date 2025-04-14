@@ -9,11 +9,13 @@
   "user_name",
   "fax_number",
   "license_number",
+  "npi_number",
   "column_break_quze",
   "email",
   "phone_number",
-  "license_state",
   "user",
+  "license_state",
+  "nabp_number",
   "section_break_ojkb",
   "address_line_1",
   "stateprovince",
@@ -110,11 +112,23 @@
   {
    "fieldname": "column_break_wcqa",
    "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.user_type==\"Pharmacy\"",
+   "fieldname": "npi_number",
+   "fieldtype": "Data",
+   "label": "NPI Number"
+  },
+  {
+   "depends_on": "eval:doc.user_type==\"Pharmacy\"",
+   "fieldname": "nabp_number",
+   "fieldtype": "Data",
+   "label": "NABP (NCPDP) Number"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-13 18:00:36.888612",
+ "modified": "2025-04-14 15:27:28.700255",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "User Details",
