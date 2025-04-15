@@ -13,13 +13,15 @@ frappe.ready(function () {
         res.message.forEach(item => {
             const row = `
                 <tr>
-                    <td>${item.ndc}</td>
-                    <td>${item.drug_name}</td>
-                    <td>${item.class}</td>
-                    <td>${item.count_type}</td>
-                    <td>${item.manufurturer}</td>
-                    <td>${item.package_size}</td>
-                    <td>${item.inventory_on_hand}</td>
+                   <td>${item.ndc || ""}</td>
+                        <td>${item.drug_name || ""}</td>
+                        <td>${item.class || ""}</td>
+                        <td>${item.count_type || ""}</td>
+                        <td>${item.manufacturer || ""}</td>
+                        <td>${item.package_size || 0}</td>
+                        <td>${item.open_bottle || 0}</td>
+                        <td>${item.close_bottle || 0}</td>
+                        <td>${item.qty_in_hand || 0}</td>
                 </tr>`;
             tbody.innerHTML += row;
         });
