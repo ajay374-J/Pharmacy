@@ -1,36 +1,140 @@
 {% extends "templates/web.html" %}
 
-{% block title %}My Stock Entries{% endblock %}
+{% block title %}Controlled Substances Inventory{% endblock %}
 
 {% block page_content %}
 <div class="container">
-    <h2>Drug Inventory</h2>
-    <div class="form-group row">
-        <label class="col-sm-2 col-form-label">Date:</label>
-        <div class="col-sm-4">
-            <input type="date" id="from_date" class="form-control" required>
+    <h1 class="text-center mb-4">CONTROLLED SUBSTANCES (C-II) INVENTORY LOG</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">NAME OF PHARMACY:</label>
+                <div class="col-sm-8">
+                    <input type="text" id="pharmacy_name" class="form-control" readonly>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Name of REGISTRANT on DEA Registration:</label>
+                <div class="col-sm-8">
+                    <input type="text" id="registrant_name" class="form-control" readonly>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Address:</label>
+                <div class="col-sm-8">
+                    <input type="text" id="address" class="form-control" readonly>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">City:</label>
+                <div class="col-sm-4">
+                    <input type="text" id="city" class="form-control" readonly>
+                </div>
+                <label class="col-sm-2 col-form-label">State:</label>
+                <div class="col-sm-4">
+                    <input type="text" id="state" class="form-control" readonly>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Zip code:</label>
+                <div class="col-sm-4">
+                    <input type="text" id="zip_code" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">DEA Registration Number:</label>
+                <div class="col-sm-8">
+                    <input type="text" id="dea_number" class="form-control" readonly>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Date of Inventory:</label>
+                <div class="col-sm-8">
+                    <input type="date" id="from_date" class="form-control" required>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <div class="col-sm-12">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="opening_checkbox">
+                        <label class="form-check-label" for="opening_checkbox">Opening of business</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="closing_checkbox">
+                        <label class="form-check-label" for="closing_checkbox">Closing of business</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">OR Started at (time):</label>
+                <div class="col-sm-8">
+                    <input type="time" id="start_time" class="form-control">
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">and Ended at (time):</label>
+                <div class="col-sm-8">
+                    <input type="time" id="end_time" class="form-control">
+                </div>
+            </div>
         </div>
     </div>
-
-    <button id="filter_btn" class="btn btn-primary my-3">Filter</button>
-    <button id="download_btn" class="btn btn-success my-3 mx-2">Download Report</button>
+    
+    <div class="row mb-3">
+        <div class="col-12">
+            <button id="filter_btn" class="btn btn-primary">Filter</button>
+            <button id="download_csv_btn" class="btn btn-success mx-2">Download CSV</button>
+            <button id="download_pdf_btn" class="btn btn-danger">Download PDF</button>
+        </div>
+    </div>
 
     <table class="table table-bordered" id="items_table">
         <thead>
             <tr>
                 <th>NDC</th>
-                <th>Drug Name</th>
-                <th>Class</th>
-                <th>Count Type</th>
-                <th>Manufacturer</th>
-                <th>Package Size</th>
-                <th>Open Bottle</th>
-                <th>Close Bottle</th>
-                <th>Qty in Hand</th>
+                <th>DRUG NAME</th>
+                <th>CLASS</th>
+                <th>COUNT TYPE</th>
+                <th>MANUFACTURER</th>
+                <th>PACKAGE SIZE</th>
+                <th>INVENTORY ON HAND</th>
+                <th>OPEN BOTTLE</th>
+                <th>CLOSE BOTTLE</th>
+                <th>QTY IN HAND</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
+    
+    <div class="row mt-5">
+        <div class="col-md-6 offset-md-3">
+            <div class="form-group row">
+                <label class="col-12 text-center">Signature of Person Responsible for taking Inventory</label>
+                <div class="col-12">
+                    <input type="text" id="signature_line" class="form-control" style="border: none; border-bottom: 1px solid #000;">
+                </div>
+            </div>
+            
+            <div class="form-group row mt-4">
+                <label class="col-12 text-center">Print Name of Person Responsible for taking Inventory</label>
+                <div class="col-12">
+                    <input type="text" id="print_name" class="form-control" style="border: none; border-bottom: 1px solid #000;">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
