@@ -10,9 +10,12 @@
   "drug_name",
   "class",
   "count_type",
-  "manufacturer",
   "package_size",
-  "inventory_on_hand"
+  "column_break_mowv",
+  "manufacturer",
+  "inventory_on_hand",
+  "open_bottle",
+  "close_bott"
  ],
  "fields": [
   {
@@ -27,23 +30,23 @@
    "ignore_user_permissions": 1,
    "in_list_view": 1,
    "label": "NDC",
-   "options": "Item"
+   "options": "Drug"
   },
   {
    "columns": 2,
-   "fetch_from": "ndc.item_name",
+   "fetch_from": "ndc.drug_name",
    "fieldname": "drug_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "DRUG NAME"
+   "label": "Drug Name"
   },
   {
    "columns": 1,
-   "fetch_from": "ndc.custom_class",
+   "fetch_from": "ndc.class",
    "fieldname": "class",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "CLASS",
+   "label": "Class",
    "options": "Class",
    "read_only": 1
   },
@@ -52,46 +55,62 @@
    "fieldname": "count_type",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "COUNT TYPE",
-   "options": "EXACT\nDefaulted\nLater",
+   "label": "Count Type",
+   "options": "EXACT\nDefaulted\nLater"
+  },
+  {
+   "columns": 1,
+   "fetch_from": "ndc.pk_size",
+   "fieldname": "package_size",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Package Size",
    "read_only": 1
   },
   {
    "columns": 1,
-   "fetch_from": "ndc.custom_package_size",
-   "fieldname": "package_size",
-   "fieldtype": "Int",
-   "in_list_view": 1,
-   "label": "PACKAGE SIZE",
-   "read_only": 1
-  },
-  {
-   "columns": 2,
    "fieldname": "inventory_on_hand",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": " INVENTORY ON HAND"
+   "label": " Inventory On Hand"
   },
   {
    "columns": 2,
-   "fetch_from": "ndc.custom_manufacturer",
+   "fetch_from": "ndc.manufacture",
    "fieldname": "manufacturer",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "MANUFACTURER",
+   "label": "Manufacturer",
    "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "open_bottle",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Open Bottle"
+  },
+  {
+   "fieldname": "column_break_mowv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "fieldname": "close_bott",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Close Bottle"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-04-13 18:48:53.299054",
+ "modified": "2025-04-15 08:24:46.401085",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
- "name": "Controlled Inventory C2",
+ "name": "Controlled Inventory",
  "owner": "Administrator",
  "permissions": [],
- "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

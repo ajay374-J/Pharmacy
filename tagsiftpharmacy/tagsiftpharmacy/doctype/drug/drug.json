@@ -1,0 +1,93 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:ndc",
+ "creation": "2025-04-14 21:49:01.564983",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "ndc",
+  "drug_name",
+  "manufacture",
+  "brand",
+  "column_break_vowo",
+  "brand_name",
+  "generic_name",
+  "pk_size",
+  "class"
+ ],
+ "fields": [
+  {
+   "fieldname": "drug_name",
+   "fieldtype": "Data",
+   "label": "Drug Name"
+  },
+  {
+   "fieldname": "manufacture",
+   "fieldtype": "Data",
+   "label": "Manufacture"
+  },
+  {
+   "fieldname": "ndc",
+   "fieldtype": "Data",
+   "label": "NDC",
+   "unique": 1
+  },
+  {
+   "fieldname": "brand",
+   "fieldtype": "Select",
+   "label": "Brand?",
+   "options": "YES\nNO"
+  },
+  {
+   "fieldname": "brand_name",
+   "fieldtype": "Data",
+   "label": "Brand Name"
+  },
+  {
+   "fieldname": "generic_name",
+   "fieldtype": "Data",
+   "label": "Generic Name"
+  },
+  {
+   "fieldname": "pk_size",
+   "fieldtype": "Data",
+   "label": "Pk Size"
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Class"
+  },
+  {
+   "fieldname": "column_break_vowo",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-04-14 23:41:20.755850",
+ "modified_by": "Administrator",
+ "module": "Tagsiftpharmacy",
+ "name": "Drug",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -40,7 +40,8 @@
   {
    "fieldname": "email",
    "fieldtype": "Data",
-   "label": "Email"
+   "label": "Email",
+   "options": "Email"
   },
   {
    "fieldname": "address_line_1",
@@ -75,7 +76,8 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Data",
-   "label": "Phone Number"
+   "label": "Phone Number",
+   "options": "Phone"
   },
   {
    "fieldname": "fax_number",
@@ -117,18 +119,20 @@
    "depends_on": "eval:doc.user_type==\"Pharmacy\"",
    "fieldname": "npi_number",
    "fieldtype": "Data",
-   "label": "NPI Number"
+   "label": "NPI Number",
+   "length": 11
   },
   {
    "depends_on": "eval:doc.user_type==\"Pharmacy\"",
    "fieldname": "nabp_number",
    "fieldtype": "Data",
-   "label": "NABP (NCPDP) Number"
+   "label": "NABP (NCPDP) Number",
+   "length": 7
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-14 15:27:28.700255",
+ "modified": "2025-04-14 21:33:22.071991",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "User Details",

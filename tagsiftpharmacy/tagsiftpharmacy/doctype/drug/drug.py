@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ControlledInventoryC2(Document):
+class Drug(Document):
 	pass
