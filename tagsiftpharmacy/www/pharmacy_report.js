@@ -1,6 +1,7 @@
 frappe.ready(function () {
     // Store pharmacy data globally
     let pharmacyData = {};
+    let userType = "";
     
     // Initialize the page
     async function initPage() {
@@ -17,6 +18,14 @@ frappe.ready(function () {
         } catch (error) {
             console.error("Error initializing page:", error);
             frappe.msgprint("Error loading data. Please try again.");
+        }
+    }
+    
+    // Update page title based on selected class
+    function updatePageTitle(className) {
+        const pageTitle = document.getElementById("page_title");
+        if (className){
+            pageTitle.textContent = `CONTROLLED SUBSTANCES C-${className} INVENTORY LOG`;
         }
     }
     
@@ -38,6 +47,11 @@ frappe.ready(function () {
                 classSelect.appendChild(option);
             });
             
+            // Add event listener to class dropdown to update page title
+            classSelect.addEventListener("change", function() {
+                updatePageTitle(this.value);
+            });
+            
         } catch (error) {
             console.error("Error fetching class options:", error);
         }
@@ -57,8 +71,12 @@ frappe.ready(function () {
                 city: "",
                 state: "",
                 zip_code: "",
-                dea_number: ""
+                dea_number: "",
+                user_type: ""
             };
+            
+            // Store the user type for later use
+            userType = pharmacyData.user_type || "";
             
             return pharmacyData;
         } catch (error) {
@@ -76,6 +94,14 @@ frappe.ready(function () {
         document.getElementById("state").value = info.state || "";
         document.getElementById("zip_code").value = info.zip_code || "";
         document.getElementById("dea_number").value = info.dea_number || "";
+        
+        // Update the label based on user type
+        const pharmacyNameLabel = document.getElementById("pharmacy_name_label");
+        if (info.user_type === "Pharmacist") {
+            pharmacyNameLabel.textContent = "Name Of Pharmacist:";
+        } else {
+            pharmacyNameLabel.textContent = "Name Of Pharmacy:";
+        }
     }
     
     // Fetch inventory items from API
@@ -90,6 +116,10 @@ frappe.ready(function () {
             });
             
             updateTable(res.message || []);
+            
+            // Update page title based on selected class
+            updatePageTitle(class_name);
+            
         } catch (error) {
             console.error("Error fetching items:", error);
             frappe.msgprint("Error loading inventory data. Please try again.");
@@ -131,9 +161,15 @@ frappe.ready(function () {
     // Download CSV report
     function downloadCSVReport() {
         const rows = [];
+        const pageTitle = document.getElementById("page_title").textContent;
         
         // Add header row with pharmacy info
-        rows.push([`Pharmacy Name: ${pharmacyData.pharmacy_name || ''}`]);
+        rows.push([pageTitle]);
+        
+        // Use the correct label based on user type
+        const nameLabel = userType === "Pharmacist" ? "Pharmacist Name:" : "Pharmacy Name:";
+        rows.push([`${nameLabel} ${pharmacyData.pharmacy_name || ''}`]);
+        
         rows.push([`DEA Registration: ${pharmacyData.dea_number || ''}`]);
         rows.push([`Date: ${document.getElementById('from_date').value || ''}`]);
         rows.push([`Class Filter: ${document.getElementById('class_name').value || 'All Classes'}`]);
@@ -164,7 +200,7 @@ frappe.ready(function () {
         const classFilter = document.getElementById('class_name').value || 'all';
         
         link.setAttribute("href", url);
-        link.setAttribute("download", `C2_inventory_report_${date}_${classFilter}.csv`);
+        link.setAttribute("download", `C${classFilter || '2'}_inventory_report_${date}.csv`);
         link.style.visibility = "hidden";
         
         document.body.appendChild(link);
@@ -194,6 +230,11 @@ frappe.ready(function () {
     function generatePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
+        const pageTitle = document.getElementById("page_title").textContent;
+        
+        // Get signature and print name values
+        const signatureName = document.getElementById("signature_line").value || "";
+        const printName = document.getElementById("print_name").value || "";
         
         // Set margins
         const margin = 15;
@@ -224,16 +265,23 @@ frappe.ready(function () {
             return y + boxHeight; // Return the new Y position
         }
         
-        // Add title
+        // Add title - use the dynamic page title
         doc.setFontSize(22);
         doc.setFont('helvetica', 'bold');
-        doc.text('CONTROLLED SUBSTANCES', pageWidth / 2, yPos, { align: 'center' });
+        
+        // Split the title into two lines for better formatting in PDF
+        const titleParts = pageTitle.split('(');
+        doc.text(titleParts[0].trim(), pageWidth / 2, yPos, { align: 'center' });
         yPos += 10;
-        doc.text('(C-II) INVENTORY LOG', pageWidth / 2, yPos, { align: 'center' });
+        
+        if (titleParts.length > 1) {
+            doc.text(`(${titleParts[1]}`, pageWidth / 2, yPos, { align: 'center' });
+        }
         yPos += 20;
         
-        // Add pharmacy info with underlines
-        yPos = drawFormField("NAME OF PHARMACY", yPos, pharmacyData.pharmacy_name || "");
+        // Add pharmacy info with underlines - use the correct label based on user type
+        const nameLabel = userType === "Pharmacist" ? "NAME OF PHARMACIST" : "NAME OF PHARMACY";
+        yPos = drawFormField(nameLabel, yPos, pharmacyData.pharmacy_name || "");
         yPos += 5;
         
         yPos = drawFormField("Name of REGISTRANT on DEA Registration:", yPos, pharmacyData.registrant_name || "");
@@ -414,14 +462,30 @@ frappe.ready(function () {
         doc.setFontSize(10);
         doc.text('Signature of Person Responsible for taking Inventory', centerX, finalY + 6, { align: 'center' });
         
+        // Add signature value if provided
+        if (signatureName) {
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(12);
+            doc.text(signatureName, centerX, finalY - 2, { align: 'center' });
+            doc.setFont('helvetica', 'normal');
+        }
+        
         // Print name line
         doc.line(centerX - (lineWidth/2), finalY + 20, centerX + (lineWidth/2), finalY + 20);
+        doc.setFontSize(10);
         doc.text('Print Name of Person Responsible for taking Inventory', centerX, finalY + 26, { align: 'center' });
+        
+        // Add print name value if provided
+        if (printName) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.text(printName, centerX, finalY + 18, { align: 'center' });
+        }
         
         // Save the PDF
         const date = document.getElementById('from_date').value || new Date().toISOString().split('T')[0];
-        const classValue = document.getElementById('class_name').value || 'all';
-        doc.save(`C2_inventory_log_${date}_${classValue}.pdf`);
+        const classValue = document.getElementById('class_name').value || '2';
+        doc.save(`C${classValue || '2'}_inventory_log_${date}.pdf`);
     }
     
     // Event listeners

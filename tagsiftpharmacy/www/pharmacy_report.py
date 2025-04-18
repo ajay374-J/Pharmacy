@@ -51,7 +51,7 @@ def get_stock_entry_items(from_date=None, class_name=None):
         # Ensure values are numeric
         package_size = float(item.get("package_size") or 0)
         open_bottle = float(item.get("open_bottle") or 0)
-        close_bottle = float(item.get("close_bott") or 0)
+        close_bottle = float(item.get("close_bottle") or 0)
 
         # Calculate qty_in_hand
         try:
@@ -68,16 +68,17 @@ def get_stock_entry_items(from_date=None, class_name=None):
 def get_pharmacy_info():
     """
     Get pharmacy information for the current user
-    First checks the screenshot doctype, then falls back to user details
     """
-    user = frappe.session.user
-    # try:
-        # First try to get info from the User Details doctype for the current user
+    user = "aj@gamil.com"
+    
+    # Get info from the User Details doctype for the current user
     user_details_info = frappe.db.get_value(
-        "User Details",  # Correct doctype name
+        "User Details",
         {"user": user},
         [
             "pharmacy_name",
+            "pharmacist_name",
+            "user_type",
             "user_name",
             "email",
             "phone_number",
@@ -93,15 +94,42 @@ def get_pharmacy_info():
         ],
         as_dict=True
     )
+    
+    # Initialize default empty response
+    response = {
+        "pharmacy_name": "",
+        "pharmacist_name":"",
+        "registrant_name": "",
+        "address": "",
+        "city": "",
+        "state": "",
+        "zip_code": "",
+        "dea_number": "",
+        "user_type": ""
+    }
+    
     if user_details_info:
-        # If we found matching data in the User Details doctype
-        return {
-            "pharmacy_name": user_details_info.get("pharmacy_name", ""),
+        # Get user type
+        user_type = user_details_info.get("user_type", "")
+        
+        # Determine which name to display based on user_type
+        display_name = ""
+        if user_type == "Pharmacy":
+            display_name = user_details_info.get("pharmacy_name", "")
+        elif user_type == "Pharmacist":
+            display_name = user_details_info.get("pharmacist_name", "")
+        
+        # Fill in the response with user details
+        response = {
+            "pharmacy_name": display_name or "",
+            "pharmacist_name":display_name or "",
             "registrant_name": user_details_info.get("user_name", ""),
             "address": user_details_info.get("address_line_1", ""),
             "city": user_details_info.get("citydistrict", ""),
             "state": user_details_info.get("stateprovince", ""),
             "zip_code": user_details_info.get("postal_code", ""),
-            "dea_number": ""  # DEA number not found in screenshot, leaving empty
+            "dea_number": "",  # DEA number not found in the database fields, leaving empty
+            "user_type": user_type  # Include user_type in response
         }
     
+    return response
