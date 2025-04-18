@@ -13,6 +13,10 @@ def execute():
             "label": "Update Inventory",
             "url": "/controlled-inventory",
         })
+    website_settings.append("top_bar_items",{
+        "label": "Edit Profile",
+        "url":"/update-details"
+    })
 
 
     website_settings.save(ignore_permissions=True)

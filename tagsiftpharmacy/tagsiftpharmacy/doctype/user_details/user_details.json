@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:email",
  "creation": "2025-04-13 00:17:36.234399",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -43,7 +44,8 @@
    "fieldname": "email",
    "fieldtype": "Data",
    "label": "Email",
-   "options": "Email"
+   "options": "Email",
+   "unique": 1
   },
   {
    "fieldname": "address_line_1",
@@ -146,10 +148,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-18 08:00:04.121260",
+ "modified": "2025-04-18 12:36:29.257472",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "User Details",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
