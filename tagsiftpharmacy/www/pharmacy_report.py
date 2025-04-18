@@ -69,7 +69,7 @@ def get_pharmacy_info():
     """
     Get pharmacy information for the current user
     """
-    user = "aj@gamil.com"
+    user =frappe.session.user
     
     # Get info from the User Details doctype for the current user
     user_details_info = frappe.db.get_value(
