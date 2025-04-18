@@ -9,11 +9,37 @@ frappe.ready(function () {
             const pharmacyInfo = await fetchPharmacyInfo();
             populatePharmacyInfo(pharmacyInfo);
             
+            // Fetch and populate class filter options
+            await populateClassOptions();
+            
             // Fetch initial items
-            await fetchItems(document.querySelector("#from_date").value);
+            await fetchItems(document.querySelector("#from_date").value, document.querySelector("#class_name").value);
         } catch (error) {
             console.error("Error initializing page:", error);
             frappe.msgprint("Error loading data. Please try again.");
+        }
+    }
+    
+    // Fetch class options and populate the dropdown
+    async function populateClassOptions() {
+        try {
+            const res = await frappe.call({
+                method: "tagsiftpharmacy.www.pharmacy_report.get_class_options"
+            });
+            
+            const classSelect = document.getElementById("class_name");
+            const classes = res.message || [];
+            
+            // Keep the "All Classes" option and add the dynamic options
+            classes.forEach(classOption => {
+                const option = document.createElement("option");
+                option.value = classOption.name;
+                option.textContent = classOption.name;
+                classSelect.appendChild(option);
+            });
+            
+        } catch (error) {
+            console.error("Error fetching class options:", error);
         }
     }
     
@@ -23,7 +49,7 @@ frappe.ready(function () {
             const res = await frappe.call({
                 method: "tagsiftpharmacy.www.pharmacy_report.get_pharmacy_info"
             });
-            
+        
             pharmacyData = res.message || {
                 pharmacy_name: "",
                 registrant_name: "",
@@ -53,12 +79,13 @@ frappe.ready(function () {
     }
     
     // Fetch inventory items from API
-    async function fetchItems(from_date) {
+    async function fetchItems(from_date, class_name) {
         try {
             const res = await frappe.call({
                 method: "tagsiftpharmacy.www.pharmacy_report.get_stock_entry_items",
                 args: {
-                    from_date
+                    from_date,
+                    class_name
                 }
             });
             
@@ -109,6 +136,7 @@ frappe.ready(function () {
         rows.push([`Pharmacy Name: ${pharmacyData.pharmacy_name || ''}`]);
         rows.push([`DEA Registration: ${pharmacyData.dea_number || ''}`]);
         rows.push([`Date: ${document.getElementById('from_date').value || ''}`]);
+        rows.push([`Class Filter: ${document.getElementById('class_name').value || 'All Classes'}`]);
         rows.push([]);  // Empty row
         
         // Add table headers
@@ -133,9 +161,10 @@ frappe.ready(function () {
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         const date = document.getElementById('from_date').value || new Date().toISOString().split('T')[0];
+        const classFilter = document.getElementById('class_name').value || 'all';
         
         link.setAttribute("href", url);
-        link.setAttribute("download", `C2_inventory_report_${date}.csv`);
+        link.setAttribute("download", `C2_inventory_report_${date}_${classFilter}.csv`);
         link.style.visibility = "hidden";
         
         document.body.appendChild(link);
@@ -265,7 +294,13 @@ frappe.ready(function () {
         
         // Date of Inventory
         yPos = drawFormField("Date of Inventory:", yPos, document.getElementById('from_date').value || "");
-        yPos += 10;
+        yPos += 5;
+        
+        // Class Filter
+        const classFilter = document.getElementById('class_name').value;
+        const classFilterText = classFilter ? classFilter : "All Classes";
+        yPos = drawFormField("Class Filter:", yPos, classFilterText);
+        yPos += 5;
         
         // Checkboxes for Opening/Closing
         const opening = document.getElementById('opening_checkbox').checked;
@@ -385,17 +420,20 @@ frappe.ready(function () {
         
         // Save the PDF
         const date = document.getElementById('from_date').value || new Date().toISOString().split('T')[0];
-        doc.save(`C2_inventory_log_${date}.pdf`);
+        const classValue = document.getElementById('class_name').value || 'all';
+        doc.save(`C2_inventory_log_${date}_${classValue}.pdf`);
     }
     
     // Event listeners
     document.querySelector("#filter_btn").addEventListener("click", () => {
         const from_date = document.querySelector("#from_date").value;
+        const class_name = document.querySelector("#class_name").value;
+        
         if (!from_date) {
             frappe.msgprint("Please select a date");
             return;
         }
-        fetchItems(from_date);
+        fetchItems(from_date, class_name);
     });
     
     document.querySelector("#download_csv_btn").addEventListener("click", downloadCSVReport);

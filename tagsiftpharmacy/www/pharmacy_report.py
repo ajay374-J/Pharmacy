@@ -2,12 +2,30 @@ import frappe
 from frappe import _
 
 @frappe.whitelist()
-def get_stock_entry_items(from_date=None):
+def get_class_options():
     """
-    Get controlled inventory items based on date
+    Get available class options from the Class doctype
+    """
+    try:
+        # Fetch all classes from the Class doctype
+        classes = frappe.get_all("Class", fields=["name"])
+        return classes
+    except Exception as e:
+        frappe.log_error(f"Error fetching class options: {str(e)}")
+        return []
+
+@frappe.whitelist()
+def get_stock_entry_items(from_date=None, class_name=None):
+    """
+    Get controlled inventory items based on date and class_name filter
+    
+    Args:
+        from_date: Date for which to fetch inventory
+        class_name: Class filter (optional) - references the Class doctype
     """
     user = frappe.session.user
     
+    # Start with base query
     query = """
         SELECT 
             ci.ndc, ci.drug_name, ci.class, ci.count_type, 
@@ -18,7 +36,16 @@ def get_stock_entry_items(from_date=None):
         WHERE di.owner = %s AND di.posting_date = %s
     """
     
-    records = frappe.db.sql(query, (user, from_date), as_dict=True)
+    # Prepare query parameters
+    params = [user, from_date]
+    
+    # Add class filter if provided
+    if class_name:
+        query += " AND ci.class = %s"
+        params.append(class_name)
+    
+    # Execute query
+    records = frappe.db.sql(query, tuple(params), as_dict=True)
     
     for item in records:
         # Ensure values are numeric
@@ -41,58 +68,40 @@ def get_stock_entry_items(from_date=None):
 def get_pharmacy_info():
     """
     Get pharmacy information for the current user
+    First checks the screenshot doctype, then falls back to user details
     """
     user = frappe.session.user
+    # try:
+        # First try to get info from the User Details doctype for the current user
+    user_details_info = frappe.db.get_value(
+        "User Details",  # Correct doctype name
+        {"user": user},
+        [
+            "pharmacy_name",
+            "user_name",
+            "email",
+            "phone_number",
+            "nabp_number",
+            "npi_number",
+            "address_line_1",
+            "address_line_2",
+            "stateprovince",
+            "citydistrict",
+            "postal_code",
+            "country",
+            "fax_number"
+        ],
+        as_dict=True
+    )
+    if user_details_info:
+        # If we found matching data in the User Details doctype
+        return {
+            "pharmacy_name": user_details_info.get("pharmacy_name", ""),
+            "registrant_name": user_details_info.get("user_name", ""),
+            "address": user_details_info.get("address_line_1", ""),
+            "city": user_details_info.get("citydistrict", ""),
+            "state": user_details_info.get("stateprovince", ""),
+            "zip_code": user_details_info.get("postal_code", ""),
+            "dea_number": ""  # DEA number not found in screenshot, leaving empty
+        }
     
-    try:
-        # Get the user document to access user details
-        user_details = frappe.get_doc("User", user)
-        
-        if user_details:
-            # Get pharmacy_name (company name)
-            pharmacy_name = ""
-            try:
-                company = frappe.get_value("User", user, "company")
-                if company:
-                    company_doc = frappe.get_doc("Company", company)
-                    pharmacy_name = company_doc.company_name
-            except Exception:
-                pharmacy_name = ""
-            
-            # Get DEA info
-            dea_info = {}
-            try:
-                company = frappe.get_value("User", user, "company")
-                if company:
-                    dea_info = frappe.db.get_value(
-                        "Pharmacy Settings", 
-                        {"company": company},
-                        ["registrant_name", "dea_number"],
-                        as_dict=True
-                    ) or {}
-            except Exception:
-                dea_info = {}
-            
-            # Return only the exact fields requested
-            return {
-                "pharmacy_name": pharmacy_name or "",
-                "registrant_name": dea_info.get("registrant_name", ""),
-                "address": getattr(user_details, "address_line1", "") or "",
-                "city": getattr(user_details, "city_district", "") or "",
-                "state": getattr(user_details, "state_province", "") or "",
-                "zip_code": getattr(user_details, "postal_code", "") or "",
-                "dea_number": dea_info.get("dea_number", "")
-            }
-    except Exception as e:
-        frappe.log_error(f"Error fetching pharmacy info: {str(e)}")
-    
-    # Return empty data if we couldn't get the information
-    return {
-        "pharmacy_name": "",
-        "registrant_name": "",
-        "address": "",
-        "city": "",
-        "state": "",
-        "zip_code": "",
-        "dea_number": ""
-    }

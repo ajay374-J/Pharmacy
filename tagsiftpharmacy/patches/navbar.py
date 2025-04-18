@@ -11,7 +11,7 @@ def execute():
         })
     website_settings.append("top_bar_items",{
             "label": "Update Inventory",
-            "url": "/controlled-inventory-c2",
+            "url": "/controlled-inventory",
         })
 
 
