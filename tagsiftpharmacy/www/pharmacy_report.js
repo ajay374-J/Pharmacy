@@ -2,7 +2,32 @@ frappe.ready(function () {
     // Store pharmacy data globally
     let pharmacyData = {};
     let userType = "";
-    
+    // First check if user has a profile
+    frappe.call({
+        method: "frappe.client.get_value",
+        args: {
+            doctype: "User Details",
+            filters: { user: frappe.session.user },
+            fieldname: ["name"]
+        },
+        callback: function(r) {
+            if (!r.message || !r.message.name) {
+                // User Details document not found, show error and redirect
+                frappe.throw({
+                    title: __("User Profile Not Found"),
+                    message: __("You need to create a user profile before accessing this form. <a href='/signup' class='btn btn-primary btn-sm'>Update Profile</a>")
+                });
+                
+                // Add a short delay before redirecting to ensure the message is seen
+                setTimeout(function() {
+                    window.location.href = "/signup";
+                }, 5000);
+            } else {
+                // User profile exists, proceed with page initialization
+                initPage();
+            }
+        }
+    });
     // Initialize the page
     async function initPage() {
         try {
