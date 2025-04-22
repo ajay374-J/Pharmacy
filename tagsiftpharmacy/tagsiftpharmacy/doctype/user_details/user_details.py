@@ -7,7 +7,7 @@ from frappe.model.document import Document
 
 class UserDetails(Document):
 	def after_insert(self):
-		user=frappe.db.get_value("User",self.user,"name")
+		user=frappe.db.get_value("User",{"name":self.email},"name")
 		if user:
 			self.db_set("user",user)
 		if not user:
