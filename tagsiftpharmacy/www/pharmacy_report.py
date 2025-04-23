@@ -183,3 +183,65 @@ def get_pharmacy_info():
         }
     
     return response
+
+@frappe.whitelist()
+def email_pdf_report(pdf_data=None, file_name=None, from_date=None, class_name=None):
+    """
+    Send pharmacy report as PDF attachment via email
+    
+    Args:
+        pdf_data: Base64 encoded PDF data
+        file_name: Name for the PDF file attachment
+        from_date: Date of the inventory report
+        class_name: Class filter applied to the report
+    """
+    try:
+        # Get current user's email
+        user = frappe.session.user
+        user_email = frappe.db.get_value("User", user, "email")
+        
+        if not user_email:
+            return {"success": False, "error": "User email not found"}
+        
+        if not pdf_data:
+            return {"success": False, "error": "PDF data is missing"}
+        
+        if not file_name:
+            file_name = "inventory_report.pdf"
+        
+        # Remove the data URI prefix to get just the base64 data
+        if "data:application/pdf;base64," in pdf_data:
+            pdf_data = pdf_data.split("data:application/pdf;base64,")[1]
+        
+        # Prepare email subject
+        class_text = f"Class {class_name}" if class_name and class_name != "All Classes" else "All Classes"
+        subject = f"Controlled Substances Inventory Report - {class_text} - {from_date}"
+        
+        # Prepare email content
+        content = f"""
+        <p>Dear {user},</p>
+        <p>Please find attached the controlled substances inventory report for {from_date} ({class_text}).</p>
+        <p>This is an automated email from the pharmacy inventory system.</p>
+        """
+        
+        # Send email with attachment
+        frappe.sendmail(
+            recipients=user_email,
+            subject=subject,
+            message=content,
+            attachments=[{
+                "fname": file_name,
+                "fcontent": pdf_data,
+                "is_b64_encoded": True
+            }]
+        )
+        
+        # Log success
+        frappe.log_error(f"Successfully sent inventory report email to {user_email}")
+        return {"success": True, "email": user_email}
+    
+    except Exception as e:
+        # Log error
+        error_msg = f"Error sending inventory report email: {str(e)}"
+        frappe.log_error(error_msg)
+        return {"success": False, "error": error_msg}
