@@ -13,9 +13,9 @@
   "package_size",
   "column_break_mowv",
   "manufacturer",
-  "inventory_on_hand",
   "close_bott",
-  "open_bottle"
+  "open_bottle",
+  "inventory_on_hand"
  ],
  "fields": [
   {
@@ -38,7 +38,8 @@
    "fieldname": "drug_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Drug Name"
+   "label": "Drug Name",
+   "read_only": 1
   },
   {
    "columns": 1,
@@ -73,7 +74,7 @@
    "fieldname": "inventory_on_hand",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": " Inventory On Hand",
+   "label": " Qty On Hand",
    "read_only": 1
   },
   {
@@ -107,7 +108,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-04-19 19:07:31.603397",
+ "modified": "2025-04-23 00:01:46.732783",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "Controlled Inventory",

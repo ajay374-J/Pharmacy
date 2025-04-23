@@ -16,13 +16,6 @@
             </div>
             
             <div class="form-group row">
-                <label class="col-sm-4 col-form-label">Name of Registrant on DEA Registration:</label>
-                <div class="col-sm-8">
-                    <input type="text" id="registrant_name" class="form-control" readonly>
-                </div>
-            </div>
-            
-            <div class="form-group row">
                 <label class="col-sm-4 col-form-label">Address:</label>
                 <div class="col-sm-8">
                     <input type="text" id="address" class="form-control" readonly>
@@ -73,30 +66,18 @@
                 </div>
             </div>
             
+            
             <div class="form-group row">
-                <div class="col-sm-12">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="opening_checkbox">
-                        <label class="form-check-label" for="opening_checkbox">Opening of business</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="closing_checkbox">
-                        <label class="form-check-label" for="closing_checkbox">Closing of business</label>
-                    </div>
+                <label class="col-sm-4 col-form-label">Started Time:</label>
+                <div class="col-sm-8">
+                    <input type="text" id="start_time" class="form-control">
                 </div>
             </div>
             
             <div class="form-group row">
-                <label class="col-sm-4 col-form-label">OR Started at (time):</label>
+                <label class="col-sm-4 col-form-label">Ended Time:</label>
                 <div class="col-sm-8">
-                    <input type="time" id="start_time" class="form-control">
-                </div>
-            </div>
-            
-            <div class="form-group row">
-                <label class="col-sm-4 col-form-label">and Ended at (time):</label>
-                <div class="col-sm-8">
-                    <input type="time" id="end_time" class="form-control">
+                    <input type="text" id="end_time" class="form-control">
                 </div>
             </div>
         </div>
@@ -119,7 +100,6 @@
                 <th>COUNT TYPE</th>
                 <th>MANUFACTURER</th>
                 <th>PACKAGE SIZE</th>
-                <th>INVENTORY ON HAND</th>
                 <th>OPEN BOTTLE</th>
                 <th>CLOSE BOTTLE</th>
                 <th>QTY IN HAND</th>
@@ -140,7 +120,7 @@
             <div class="form-group row mt-4">
                 <label class="col-12 text-center">Print Name of Person Responsible for taking Inventory</label>
                 <div class="col-12">
-                    <input type="text" id="print_name" class="form-control" style="border: none; border-bottom: 1px solid #000;">
+                    <input type="text" id="print_name" class="form-control read-only-field" style="border: none; border-bottom: 1px solid #000;" readonly>
                 </div>
             </div>
         </div>

@@ -2,32 +2,44 @@ frappe.ready(function () {
     // Store pharmacy data globally
     let pharmacyData = {};
     let userType = "";
+    
     // First check if user has a profile
+    // Check if user details exist for the current logged-in user
     frappe.call({
-        method: "frappe.client.get_value",
-        args: {
-            doctype: "User Details",
-            filters: { user: frappe.session.user },
-            fieldname: ["name"]
-        },
+        method: "tagsiftpharmacy.tagsiftpharmacy.user.get_user_details_case_insensitive",
         callback: function(r) {
+            console.log("Custom Method Response:", r.message);
+
             if (!r.message || !r.message.name) {
-                // User Details document not found, show error and redirect
-                frappe.throw({
+                console.log("User details not found, showing dialog");
+
+                let d = new frappe.ui.Dialog({
                     title: __("User Profile Not Found"),
-                    message: __("You need to create a user profile before accessing this form. <a href='/signup' class='btn btn-primary btn-sm'>Update Profile</a>")
+                    static: 1,
+                    primary_action_label: __("Update Profile"),
+                    primary_action: function () {
+                        window.location.href = "/signup";
+                    }
                 });
-                
-                // Add a short delay before redirecting to ensure the message is seen
-                setTimeout(function() {
-                    window.location.href = "/signup";
-                }, 5000);
+
+                d.fields = [];
+
+                d.$body.html(
+                    '<div class="text-center">' +
+                    __("You need to create a user profile before accessing this form.") +
+                    '</div>'
+                );
+
+                d.$wrapper.find(".modal-header .close").remove();
+                d.show();
             } else {
-                // User profile exists, proceed with page initialization
+                console.log("User details found:", r.message.name);
+                // continue your app logic here
                 initPage();
             }
         }
     });
+    
     // Initialize the page
     async function initPage() {
         try {
@@ -37,6 +49,13 @@ frappe.ready(function () {
             
             // Fetch and populate class filter options
             await populateClassOptions();
+            
+            // Set default date to today if not already set
+            const fromDateInput = document.querySelector("#from_date");
+            if (!fromDateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                fromDateInput.value = today;
+            }
             
             // Fetch initial items
             await fetchItems(document.querySelector("#from_date").value, document.querySelector("#class_name").value);
@@ -51,6 +70,8 @@ frappe.ready(function () {
         const pageTitle = document.getElementById("page_title");
         if (className){
             pageTitle.textContent = `CONTROLLED SUBSTANCES C-${className} INVENTORY LOG`;
+        } else {
+            pageTitle.textContent = "CONTROLLED SUBSTANCES INVENTORY LOG";
         }
     }
     
@@ -91,7 +112,6 @@ frappe.ready(function () {
         
             pharmacyData = res.message || {
                 pharmacy_name: "",
-                registrant_name: "",
                 address: "",
                 city: "",
                 state: "",
@@ -113,7 +133,6 @@ frappe.ready(function () {
     // Populate pharmacy info in the form
     function populatePharmacyInfo(info) {
         document.getElementById("pharmacy_name").value = info.pharmacy_name || "";
-        document.getElementById("registrant_name").value = info.registrant_name || "";
         document.getElementById("address").value = info.address || "";
         document.getElementById("city").value = info.city || "";
         document.getElementById("state").value = info.state || "";
@@ -129,9 +148,84 @@ frappe.ready(function () {
         }
     }
     
+    // Direct API call function for date changes - more reliable
+    function handleDateChange() {
+        const fromDate = document.getElementById('from_date').value;
+        const className = document.getElementById('class_name').value;
+        
+        if (fromDate) {
+            console.log("Date changed to:", fromDate);
+            frappe.call({
+                method: "tagsiftpharmacy.www.pharmacy_report.get_stock_entry_items",
+                args: {
+                    from_date: fromDate,
+                    class_name: className
+                },
+                callback: function(r) {
+                    console.log("Raw API response:", r);
+                    if (r.message) {
+                        const response = r.message;
+                        
+                        // Check if we have details in the response
+                        if (response.details) {
+                            console.log("Details found in response:", response.details);
+                            
+                            // Update the time fields - ensure they are the correct IDs
+                            // For read-only fields, we might need to update their value and then make them readonly again
+                            updateReadOnlyField("start_time", response.details.start_time || "");
+                            updateReadOnlyField("end_time", response.details.end_time || "");
+                            
+                            // Use the correct person responsible field
+                            const personName = response.details.person_responsible || "";
+                            updateReadOnlyField("print_name", personName);
+                            // updateReadOnlyField("signature_line", personName);
+                        }
+                        
+                        // Update the table with items
+                        if (response.items) {
+                            updateTable(response.items);
+                        } else if (Array.isArray(response)) {
+                            updateTable(response);
+                        }
+                        
+                        // Update page title based on selected class
+                        updatePageTitle(className);
+                    }
+                }
+            });
+        }
+    }
+    
+    // Helper function to update read-only fields
+    function updateReadOnlyField(fieldId, value) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            // Store the original readonly state
+            const wasReadOnly = field.readOnly;
+            
+            // Temporarily make it editable if it was readonly
+            if (wasReadOnly) {
+                field.readOnly = false;
+            }
+            
+            // Update the value
+            field.value = value;
+            console.log(`Updated ${fieldId} to:`, value);
+            
+            // Restore the readonly state
+            if (wasReadOnly) {
+                field.readOnly = true;
+            }
+        } else {
+            console.error(`${fieldId} field not found in DOM`);
+        }
+    }
+    
     // Fetch inventory items from API
     async function fetchItems(from_date, class_name) {
         try {
+            console.log("Fetching items for date:", from_date, "class:", class_name);
+            
             const res = await frappe.call({
                 method: "tagsiftpharmacy.www.pharmacy_report.get_stock_entry_items",
                 args: {
@@ -140,7 +234,31 @@ frappe.ready(function () {
                 }
             });
             
-            updateTable(res.message || []);
+            // Log the entire response to help with debugging
+            console.log("API Response:", res.message);
+            
+            // The response now contains both items and details
+            const response = res.message || {};
+            
+            if (typeof response === 'object' && !Array.isArray(response)) {
+                // If response is an object (new format)
+                console.log("Response is in object format with details");
+                
+                const items = response.items || [];
+                const details = response.details || {};
+                
+                console.log("Details extracted:", details);
+                
+                // Update table with inventory items
+                updateTable(items);
+                
+                // Update form fields with inventory details
+                updateInventoryDetails(details);
+            } else {
+                // If response is an array (old format)
+                console.log("Response is in array format (old format)");
+                updateTable(Array.isArray(response) ? response : []);
+            }
             
             // Update page title based on selected class
             updatePageTitle(class_name);
@@ -149,6 +267,22 @@ frappe.ready(function () {
             console.error("Error fetching items:", error);
             frappe.msgprint("Error loading inventory data. Please try again.");
         }
+    }
+    
+    // Update form fields with inventory details
+    function updateInventoryDetails(details) {
+        console.log("Attempting to update inventory details with:", details);
+        
+        // Update time fields using the helper function for read-only fields
+        updateReadOnlyField("start_time", details.start_time || "");
+        updateReadOnlyField("end_time", details.end_time || "");
+        
+        // Use the correct person responsible field name
+        const personName = details.person_responsible || "";
+        
+        // Update person responsible fields
+        updateReadOnlyField("print_name", personName);
+        // updateReadOnlyField("signature_line", personName);
     }
     
     // Update table with inventory items
@@ -174,7 +308,6 @@ frappe.ready(function () {
                     <td>${item.count_type || ""}</td>
                     <td>${item.manufacturer || ""}</td>
                     <td>${item.package_size || 0}</td>
-                    <td>${item.inventory_on_hand || 0}</td>
                     <td>${item.open_bottle || 0}</td>
                     <td>${item.close_bottle || 0}</td>
                     <td>${item.qty_in_hand || 0}</td>
@@ -198,6 +331,9 @@ frappe.ready(function () {
         rows.push([`DEA Registration: ${pharmacyData.dea_number || ''}`]);
         rows.push([`Date: ${document.getElementById('from_date').value || ''}`]);
         rows.push([`Class Filter: ${document.getElementById('class_name').value || 'All Classes'}`]);
+        rows.push([`Start Time: ${document.getElementById('start_time').value || ''}`]);
+        rows.push([`End Time: ${document.getElementById('end_time').value || ''}`]);
+        rows.push([`Person Responsible: ${document.getElementById('print_name').value || ''}`]);
         rows.push([]);  // Empty row
         
         // Add table headers
@@ -261,6 +397,10 @@ frappe.ready(function () {
         const signatureName = document.getElementById("signature_line").value || "";
         const printName = document.getElementById("print_name").value || "";
         
+        // Get start and end times
+        const startTime = document.getElementById('start_time').value || "";
+        const endTime = document.getElementById('end_time').value || "";
+        
         // Set margins
         const margin = 15;
         const pageWidth = 210;  // A4 width in mm
@@ -309,8 +449,6 @@ frappe.ready(function () {
         yPos = drawFormField(nameLabel, yPos, pharmacyData.pharmacy_name || "");
         yPos += 5;
         
-        yPos = drawFormField("Name of REGISTRANT on DEA Registration:", yPos, pharmacyData.registrant_name || "");
-        yPos += 5;
         
         yPos = drawFormField("Address:", yPos, pharmacyData.address || "");
         yPos += 5;
@@ -375,51 +513,13 @@ frappe.ready(function () {
         yPos = drawFormField("Class Filter:", yPos, classFilterText);
         yPos += 5;
         
-        // Checkboxes for Opening/Closing
-        const opening = document.getElementById('opening_checkbox').checked;
-        const closing = document.getElementById('closing_checkbox').checked;
+        // Start Time
+        yPos = drawFormField("Started Time:", yPos, startTime);
+        yPos += 5;
         
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        doc.text("Inventory Taken at:", margin, yPos + 5);
-        
-        // Draw checkbox for Opening
-        doc.rect(margin + 40, yPos + 2, 4, 4);
-        if (opening) {
-            // Draw X inside checkbox
-            doc.line(margin + 40, yPos + 2, margin + 44, yPos + 6);
-            doc.line(margin + 40, yPos + 6, margin + 44, yPos + 2);
-        }
-        doc.text("Opening or", margin + 46, yPos + 5);
-        
-        // Draw checkbox for Closing
-        doc.rect(margin + 80, yPos + 2, 4, 4);
-        if (closing) {
-            // Draw X inside checkbox
-            doc.line(margin + 80, yPos + 2, margin + 84, yPos + 6);
-            doc.line(margin + 80, yPos + 6, margin + 84, yPos + 2);
-        }
-        doc.text("Closing of business", margin + 86, yPos + 5);
-        
+        // End Time
+        yPos = drawFormField("Ended Time:", yPos, endTime);
         yPos += 10;
-        
-        // Start and End times
-        const startTime = document.getElementById('start_time').value || "";
-        const endTime = document.getElementById('end_time').value || "";
-        
-        doc.text("OR Started at (time):", margin, yPos + 5);
-        doc.line(margin + 40, yPos + 6, margin + 80, yPos + 6);
-        if (startTime) {
-            doc.text(startTime, margin + 42, yPos + 5);
-        }
-        
-        doc.text("and Ended at (time):", margin + 85, yPos + 5);
-        doc.line(margin + 130, yPos + 6, margin + 170, yPos + 6);
-        if (endTime) {
-            doc.text(endTime, margin + 132, yPos + 5);
-        }
-        
-        yPos += 15;
         
         // Get table data
         const tableData = [];
@@ -436,9 +536,9 @@ frappe.ready(function () {
             });
         }
         
-        // Add table to PDF - matching the C2 INVENTORY table from screenshot 2
+        // Add table to PDF 
         doc.autoTable({
-            head: [['NDC', 'DRUG NAME', 'CLASS', 'COUNT TYPE', 'MANUFACTURER', 'PACKAGE SIZE', 'INVENTORY ON HAND', 'QTY IN BAG']],
+            head: [['NDC', 'DRUG NAME', 'CLASS', 'COUNT TYPE', 'MANUFACTURER', 'PACKAGE SIZE', 'OPEN BOTTLE', 'CLOSE BOTTLE', 'QTY IN HAND']],
             body: tableData.map(row => [
                 row[0] || '', // NDC
                 row[1] || '', // DRUG NAME
@@ -446,8 +546,9 @@ frappe.ready(function () {
                 row[3] || '', // COUNT TYPE
                 row[4] || '', // MANUFACTURER
                 row[5] || '', // PACKAGE SIZE
-                row[6] || '', // INVENTORY ON HAND
-                row[9] || ''  // QTY IN BAG (using QTY IN HAND)
+                row[6] || '', // OPEN BOTTLE
+                row[7] || '', // CLOSE BOTTLE
+                row[8] || ''  // QTY IN HAND
             ]),
             startY: yPos,
             theme: 'grid',
@@ -472,8 +573,9 @@ frappe.ready(function () {
                 3: { cellWidth: 18 }, // Count Type
                 4: { cellWidth: 25 }, // Manufacturer
                 5: { cellWidth: 18 }, // Package Size
-                6: { cellWidth: 25 }, // Inventory On Hand
-                7: { cellWidth: 15 }  // Qty in Bag
+                6: { cellWidth: 18 }, // Open Bottle
+                7: { cellWidth: 18 }, // Close Bottle
+                8: { cellWidth: 18 }  // Qty in Hand
             }
         });
         
@@ -525,22 +627,12 @@ frappe.ready(function () {
         fetchItems(from_date, class_name);
     });
     
+    // Add event listener for date change to automatically fetch data
+    document.querySelector("#from_date").addEventListener("change", handleDateChange);
+    
     document.querySelector("#download_csv_btn").addEventListener("click", downloadCSVReport);
     document.querySelector("#download_pdf_btn").addEventListener("click", downloadPDFReport);
-    
-    // Opening/closing checkbox logic
-    document.getElementById("opening_checkbox").addEventListener("change", function() {
-        if (this.checked) {
-            document.getElementById("closing_checkbox").checked = false;
-        }
-    });
-    
-    document.getElementById("closing_checkbox").addEventListener("change", function() {
-        if (this.checked) {
-            document.getElementById("opening_checkbox").checked = false;
-        }
-    });
-    
+
     // Initialize page on load
-    initPage();
+    // initPage(); // This is now called from the user details check callback
 });

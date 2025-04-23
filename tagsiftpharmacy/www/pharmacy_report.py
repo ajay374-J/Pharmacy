@@ -25,7 +25,47 @@ def get_stock_entry_items(from_date=None, class_name=None):
     """
     user = frappe.session.user
     
-    # Start with base query
+    # Get the Drug Inventory details with the correct field name
+    try:
+        # Log the query parameters
+        frappe.log_error(f"Fetching inventory for user: {user}, date: {from_date}")
+        
+        # Query to get the Drug Inventory details with the correct field name
+        inventory_query = """
+            SELECT 
+                di.name, di.start_time, di.end_time, 
+                di.person_responsible_from_update_inventory
+            FROM `tabDrug Inventory` di
+            WHERE di.owner = %s AND di.posting_date = %s
+            LIMIT 1
+        """
+        
+        inventory_details = frappe.db.sql(inventory_query, (user, from_date), as_dict=True)
+        
+        if inventory_details:
+            inventory_details = inventory_details[0]
+            # Log what we found
+            # frappe.log_error(f"Found inventory details: {inventory_details}")
+            
+            # Map the field to person_responsible for consistency in the frontend
+            if inventory_details.get('person_responsible_from_update_inventory'):
+                inventory_details['person_responsible'] = inventory_details['person_responsible_from_update_inventory']
+        else:
+            frappe.log_error(f"No inventory details found for date: {from_date}")
+            inventory_details = {
+                "start_time": "",
+                "end_time": "",
+                "person_responsible": ""
+            }
+    except Exception as e:
+        frappe.log_error(f"Error fetching inventory details: {str(e)}")
+        inventory_details = {
+            "start_time": "",
+            "end_time": "",
+            "person_responsible": ""
+        }
+    
+    # Start with base query for controlled inventory items
     query = """
         SELECT 
             ci.ndc, ci.drug_name, ci.class, ci.count_type, 
@@ -61,15 +101,24 @@ def get_stock_entry_items(from_date=None, class_name=None):
             qty_in_hand = 0
 
         item["qty_in_hand"] = qty_in_hand
+    
+    # Create a response object with both inventory details and records
+    response = {
+        "items": records,
+        "details": inventory_details
+    }
 
-    return records
+    # Log the final response structure
+    # frappe.log_error(f"Returning response with {len(records)} items and details: {inventory_details}")
+
+    return response
 
 @frappe.whitelist()
 def get_pharmacy_info():
     """
     Get pharmacy information for the current user
     """
-    user =frappe.session.user
+    user = frappe.session.user
     
     # Get info from the User Details doctype for the current user
     user_details_info = frappe.db.get_value(
@@ -88,6 +137,7 @@ def get_pharmacy_info():
             "address_line_2",
             "stateprovince",
             "citydistrict",
+            "dae_registration_number",
             "postal_code",
             "country",
             "fax_number"
@@ -128,7 +178,7 @@ def get_pharmacy_info():
             "city": user_details_info.get("citydistrict", ""),
             "state": user_details_info.get("stateprovince", ""),
             "zip_code": user_details_info.get("postal_code", ""),
-            "dea_number": "",  # DEA number not found in the database fields, leaving empty
+            "dea_number": user_details_info.get("dae_registration_number", ""),  # DEA number not found in the database fields, leaving empty
             "user_type": user_type  # Include user_type in response
         }
     

@@ -11,6 +11,7 @@
   "pharmacist_name",
   "fax_number",
   "license_number",
+  "dae_registration_number",
   "column_break_quze",
   "email",
   "phone_number",
@@ -58,8 +59,9 @@
   },
   {
    "fieldname": "stateprovince",
-   "fieldtype": "Data",
-   "label": "State/Province"
+   "fieldtype": "Select",
+   "label": "State/Province",
+   "options": "Alabama\nAlaska\nArizona\nArkansas\nCalifornia\nColorado\nConnecticut\nDelaware\nFlorida\nGeorgia\nHawaii\nIdaho\nIllinois\nIndiana\nIowa\nKansas\nKentucky\nLouisiana\nMaine\nMaryland\nMassachusetts\nMichigan\nMinnesota\nMississippi\nMissouri\nMontana\nNebraska\nNevada\nNew Hampshire\nNew Jersey\nNew Mexico\nNew York\nNorth Carolina\nNorth Dakota\nOhio\nOklahoma\nOregon\nPennsylvania\nRhode Island\nSouth Carolina\nSouth Dakota\nTennessee\nTexas\nUtah\nVermont\nVirginia\nWashington\nWest Virginia\nWisconsin\nWyoming"
   },
   {
    "fieldname": "postal_code",
@@ -67,9 +69,11 @@
    "label": "Postal Code"
   },
   {
+   "default": "USA",
    "fieldname": "country",
    "fieldtype": "Data",
-   "label": "Country"
+   "label": "Country",
+   "read_only": 1
   },
   {
    "fieldname": "phone_number",
@@ -138,11 +142,17 @@
    "fieldname": "pharmacist_name",
    "fieldtype": "Data",
    "label": "Pharmacist Name"
+  },
+  {
+   "depends_on": "eval:doc.user_type==\"Pharmacy\"",
+   "fieldname": "dae_registration_number",
+   "fieldtype": "Data",
+   "label": "DAE Registration Number"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-19 19:12:23.907346",
+ "modified": "2025-04-23 08:10:06.490179",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "User Details",

@@ -1,13 +1,19 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:INV-{posting_date}-{####}",
+ "autoname": "field:report_name",
  "creation": "2025-04-09 21:35:21.442851",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "report_name",
+  "start_time",
+  "column_break_qqem",
   "posting_date",
-  "drug_details"
+  "end_time",
+  "section_break_tgtu",
+  "drug_details",
+  "person_responsible_from_update_inventory"
  ],
  "fields": [
   {
@@ -20,15 +26,44 @@
    "fieldtype": "Table",
    "label": "Drug Details",
    "options": "Controlled Inventory"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "label": "Start Time"
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "label": "End Time"
+  },
+  {
+   "fieldname": "person_responsible_from_update_inventory",
+   "fieldtype": "Data",
+   "label": "Person Responsible from Update Inventory"
+  },
+  {
+   "fieldname": "section_break_tgtu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "report_name",
+   "fieldtype": "Data",
+   "label": "Report Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_qqem",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-14 23:13:08.756048",
+ "modified": "2025-04-23 08:27:34.566498",
  "modified_by": "Administrator",
  "module": "Tagsiftpharmacy",
  "name": "Drug Inventory",
- "naming_rule": "Expression",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
