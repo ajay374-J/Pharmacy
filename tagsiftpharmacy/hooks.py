@@ -139,7 +139,7 @@ override_doctype_class = {
 
 doc_events = {
 	"User": {
-		"after_insert": "tagsiftpharmacy.tagsiftpharmacy.user.set_permission",
+		"before_save": "tagsiftpharmacy.tagsiftpharmacy.user.set_permission",
 	
 	}
 }
