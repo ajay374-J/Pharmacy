@@ -209,17 +209,25 @@ def email_pdf_report(pdf_data=None, file_name=None, from_date=None, class_name=N
         if not file_name:
             file_name = "inventory_report.pdf"
         
-        # Remove the data URI prefix to get just the base64 data
+        # Import necessary modules
+        import base64
+        import os
+        from frappe.utils import get_files_path
+        
+        # Clean the base64 data - remove the data URI prefix if present
         base64_data = pdf_data
         if "data:application/pdf;base64," in pdf_data:
             base64_data = pdf_data.split("data:application/pdf;base64,")[1]
         
-        # Import base64 to decode the data
-        import base64
-        from io import BytesIO
+        # Ensure the base64 data is clean (remove any whitespace)
+        base64_data = base64_data.strip()
         
-        # Decode base64 to binary
-        pdf_binary = base64.b64decode(base64_data)
+        # Create a temporary file path
+        temp_file_path = os.path.join(get_files_path(), file_name)
+        
+        # Write the decoded base64 data to a file
+        with open(temp_file_path, "wb") as f:
+            f.write(base64.b64decode(base64_data))
         
         # Prepare email subject
         class_text = f"Class {class_name}" if class_name and class_name != "All Classes" else "All Classes"
@@ -232,35 +240,25 @@ def email_pdf_report(pdf_data=None, file_name=None, from_date=None, class_name=N
         <p>This is an automated email from the pharmacy inventory system.</p>
         """
         
-        # Create a temporary file if needed for attachment
-        from frappe.utils.file_manager import save_file
-        
-        # Save as a file in Frappe
-        file_doc = save_file(
-            file_name, 
-            pdf_binary, 
-            "User", 
-            user,
-            is_private=1
-        )
-        
         # Send email with the file attachment
         frappe.sendmail(
             recipients=user_email,
             subject=subject,
             message=content,
-            attachments=[{
-                "fname": file_name,
-                "fcontent": pdf_binary
-            }]
+            attachments=[temp_file_path]
         )
+        
+        # Clean up - remove temporary file
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
         
         # Log success
         frappe.log_error(f"Successfully sent inventory report email to {user_email}")
         return {"success": True, "email": user_email}
     
     except Exception as e:
-        # Log error
-        error_msg = f"Error sending inventory report email: {str(e)}"
+        # Log the complete error details
+        import traceback
+        error_msg = f"Error sending inventory report email: {str(e)}\n{traceback.format_exc()}"
         frappe.log_error(error_msg)
-        return {"success": False, "error": error_msg}
+        return {"success": False, "error": str(e)}
