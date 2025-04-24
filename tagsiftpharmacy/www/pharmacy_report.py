@@ -186,61 +186,57 @@ def get_pharmacy_info():
 
 @frappe.whitelist()
 def email_pdf_report(pdf_data=None, file_name=None, from_date=None, class_name=None):
-    # Get current user's email
+    import base64
+    import re
+
     user = frappe.session.user
     user_email = frappe.db.get_value("User", user, "email")
-    
+
     if not user_email:
         return {"success": False, "error": "User email not found"}
-    
+
     if not pdf_data:
         return {"success": False, "error": "PDF data is missing"}
-    
+
     if not file_name:
         file_name = "inventory_report.pdf"
-    
-    # Import necessary modules
-    import base64
-    import os
-    from frappe.utils import get_files_path
-    from frappe.utils.file_manager import save_file
-    
-    # Clean the base64 data - remove the data URI prefix if present
-    base64_data = pdf_data
-    if "data:application/pdf;base64," in pdf_data:
-        base64_data = pdf_data.split("data:application/pdf;base64,")[1]
-    
-    # Ensure the base64 data is clean (remove any whitespace)
-    base64_data = base64_data.strip()
-    
-    # Decode the base64 data to binary
-    pdf_binary = base64.b64decode(base64_data)
-    
-    # Prepare email subject
+
+    # Sanitize filename to avoid issues
+    file_name = re.sub(r'[^\w\-_\. ]', '_', file_name)
+
+    try:
+        # Decode base64 to binary
+        pdf_binary = base64.b64decode(pdf_data.strip())
+    except Exception as e:
+        frappe.log_error(f"PDF decode failed: {str(e)}")
+        return {"success": False, "error": "Invalid PDF data format"}
+
+    # Email details
     class_text = f"Class {class_name}" if class_name and class_name != "All Classes" else "All Classes"
     subject = f"Controlled Substances Inventory Report - {class_text} - {from_date}"
-    
-    # Prepare email content
-    content = f"""
+
+    message = f"""
     <p>Dear {user},</p>
-    <p>Please find attached the controlled substances inventory report for {from_date} ({class_text}).</p>
+    <p>Please find attached the controlled substances inventory report for <strong>{from_date}</strong> ({class_text}).</p>
     <p>This is an automated email from the pharmacy inventory system.</p>
     """
-    
-    # Create the attachment as a dictionary object
+
+    # Prepare the attachment
     attachment = {
         "fname": file_name,
         "fcontent": pdf_binary
     }
-    
-    # Send email with the file attachment
-    frappe.sendmail(
-        recipients=user_email,
-        subject=subject,
-        message=content,
-        attachments=[attachment]
-    )
-    
-    # Log success
-    frappe.log_error(f"Successfully sent inventory report email to {user_email}")
-    return {"success": True, "email": user_email}
+
+    # Send the email
+    try:
+        frappe.sendmail(
+            recipients=user_email,
+            subject=subject,
+            message=message,
+            attachments=[attachment]
+        )
+        frappe.log_error(f"Email sent to {user_email} with PDF {file_name}")
+        return {"success": True, "email": user_email}
+    except Exception as e:
+        frappe.log_error(f"Failed to send email: {str(e)}")
+        return {"success": False, "error": f"Failed to send email: {str(e)}"}
