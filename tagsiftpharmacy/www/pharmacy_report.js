@@ -695,237 +695,178 @@ async function populateClassOptions() {
         });
     }
 
-    // Function to generate PDF data and return it
     function generatePDFForEmail(resolve, reject) {
         try {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
+    
             const pageTitle = document.getElementById("page_title").textContent;
-            
-            // Get signature and print name values
             const signatureName = document.getElementById("signature_line").value || "";
             const printName = document.getElementById("print_name").value || "";
-            
-            // Get start and end times
             const startTime = document.getElementById('start_time').value || "";
             const endTime = document.getElementById('end_time').value || "";
-            
-            // Set margins
+    
             const margin = 15;
-            const pageWidth = 210;  // A4 width in mm
+            const pageWidth = 210;
             const contentWidth = pageWidth - (margin * 2);
             let yPos = margin;
-            
-            // Helper function for drawing boxes with text
+    
             function drawFormField(text, y, fieldValue = "", boxHeight = 10) {
-                // Draw the label
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'bold');
                 doc.text(text, margin, y + 5);
-                
-                // Measure text width for positioning the line
+    
                 const textWidth = doc.getTextWidth(text);
                 const lineStart = margin + textWidth + 2;
-                
-                // Draw the underline
+    
                 if (fieldValue) {
                     doc.setFont('helvetica', 'normal');
                     doc.text(fieldValue, lineStart + 2, y + 5);
                 }
-                
-                // Draw underline extending to the end of the page
+    
                 doc.line(lineStart, y + 6, margin + contentWidth, y + 6);
-                
-                return y + boxHeight; // Return the new Y position
+                return y + boxHeight;
             }
-            
-            // Add title - use the dynamic page title
+    
             doc.setFontSize(22);
             doc.setFont('helvetica', 'bold');
-            
-            // Split the title into two lines for better formatting in PDF
             const titleParts = pageTitle.split('(');
             doc.text(titleParts[0].trim(), pageWidth / 2, yPos, { align: 'center' });
             yPos += 10;
-            
+    
             if (titleParts.length > 1) {
                 doc.text(`(${titleParts[1]}`, pageWidth / 2, yPos, { align: 'center' });
             }
             yPos += 20;
-            
-            // Add pharmacy info with underlines - use the correct label based on user type
+    
             const nameLabel = userType === "Pharmacist" ? "NAME OF PHARMACIST" : "NAME OF PHARMACY";
             yPos = drawFormField(nameLabel, yPos, pharmacyData.pharmacy_name || "");
             yPos += 5;
-            
-            
             yPos = drawFormField("Address:", yPos, pharmacyData.address || "");
             yPos += 5;
-            
-            // City, State, Zip on one line
+    
             doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
             doc.text("City:", margin, yPos + 5);
             let textWidth = doc.getTextWidth("City:");
             let lineStart = margin + textWidth + 2;
-            
-            // City value and line
             const cityWidth = 60;
             if (pharmacyData.city) {
                 doc.setFont('helvetica', 'normal');
                 doc.text(pharmacyData.city, lineStart + 2, yPos + 5);
             }
             doc.line(lineStart, yPos + 6, lineStart + cityWidth, yPos + 6);
-            
-            // State label
+    
             doc.setFont('helvetica', 'bold');
             const stateX = lineStart + cityWidth + 10;
             doc.text("State:", stateX, yPos + 5);
             textWidth = doc.getTextWidth("State:");
             lineStart = stateX + textWidth + 2;
-            
-            // State value and line
             const stateWidth = 40;
             if (pharmacyData.state) {
                 doc.setFont('helvetica', 'normal');
                 doc.text(pharmacyData.state, lineStart + 2, yPos + 5);
             }
             doc.line(lineStart, yPos + 6, lineStart + stateWidth, yPos + 6);
-            
-            // Zip code label
+    
             doc.setFont('helvetica', 'bold');
             const zipX = lineStart + stateWidth + 10;
             doc.text("Zip code:", zipX, yPos + 5);
             textWidth = doc.getTextWidth("Zip code:");
             lineStart = zipX + textWidth + 2;
-            
-            // Zip value and line
             if (pharmacyData.zip_code) {
                 doc.setFont('helvetica', 'normal');
                 doc.text(pharmacyData.zip_code, lineStart + 2, yPos + 5);
             }
             doc.line(lineStart, yPos + 6, margin + contentWidth, yPos + 6);
-            
             yPos += 15;
-            
-            // DEA Number
+    
             yPos = drawFormField("DEA Registration Number:", yPos, pharmacyData.dea_number || "");
-            yPos += 5;
-            
-            // Date of Inventory
             yPos = drawFormField("Date of Inventory:", yPos, document.getElementById('from_date').value || "");
-            yPos += 5;
-            
-            // Class Filter
             const classFilter = document.getElementById('class_name').value;
             const classFilterText = classFilter ? classFilter : "All Classes";
             yPos = drawFormField("Class Filter:", yPos, classFilterText);
-            yPos += 5;
-            
-            // Start Time
             yPos = drawFormField("Started Time:", yPos, startTime);
-            yPos += 5;
-            
-            // End Time
             yPos = drawFormField("Ended Time:", yPos, endTime);
             yPos += 10;
-            
-            // Get table data
+    
             const tableData = [];
             const tableRows = document.querySelectorAll("#items_table tbody tr");
-            
+    
             if (tableRows.length === 0 || tableRows[0].querySelector("td[colspan]")) {
-                // No data
                 tableData.push(['No data available for selected date']);
             } else {
-                // Add table data rows
                 tableRows.forEach(row => {
                     const rowData = Array.from(row.querySelectorAll("td")).map(td => td.innerText);
                     tableData.push(rowData);
                 });
             }
-            
-            // Add table to PDF 
+    
             doc.autoTable({
                 head: [['NDC', 'DRUG NAME', 'CLASS', 'COUNT TYPE', 'MANUFACTURER', 'PACKAGE SIZE', 'OPEN BOTTLE', 'CLOSE BOTTLE', 'QTY IN HAND']],
                 body: tableData.map(row => [
-                    row[0] || '', // NDC
-                    row[1] || '', // DRUG NAME
-                    row[2] || '', // CLASS
-                    row[3] || '', // COUNT TYPE
-                    row[4] || '', // MANUFACTURER
-                    row[5] || '', // PACKAGE SIZE
-                    row[6] || '', // OPEN BOTTLE
-                    row[7] || '', // CLOSE BOTTLE
-                    row[8] || ''  // QTY IN HAND
+                    row[0] || '', row[1] || '', row[2] || '', row[3] || '', row[4] || '',
+                    row[5] || '', row[6] || '', row[7] || '', row[8] || ''
                 ]),
                 startY: yPos,
                 theme: 'grid',
-                headStyles: { 
-                    fillColor: [255, 255, 255], 
-                    textColor: [0, 102, 204], 
+                headStyles: {
+                    fillColor: [255, 255, 255],
+                    textColor: [0, 102, 204],
                     fontStyle: 'bold',
                     halign: 'center',
                     valign: 'middle',
                     fontSize: 10
                 },
-                styles: { 
-                    fontSize: 9, 
+                styles: {
+                    fontSize: 9,
                     cellPadding: 2,
                     lineWidth: 0.1,
                     lineColor: [0, 0, 0]
-                },
-                columnStyles: {
-                    0: { cellWidth: 18 }, // NDC
-                    1: { cellWidth: 40 }, // Drug Name
-                    2: { cellWidth: 12 }, // Class
-                    3: { cellWidth: 18 }, // Count Type
-                    4: { cellWidth: 25 }, // Manufacturer
-                    5: { cellWidth: 18 }, // Package Size
-                    6: { cellWidth: 18 }, // Open Bottle
-                    7: { cellWidth: 18 }, // Close Bottle
-                    8: { cellWidth: 18 }  // Qty in Hand
                 }
             });
-            
-            // Add signature lines
+    
             const finalY = doc.lastAutoTable.finalY + 30;
-            const lineWidth = 100;
             const centerX = pageWidth / 2;
-            
-            // Signature line
-            doc.line(centerX - (lineWidth/2), finalY, centerX + (lineWidth/2), finalY);
+            const lineWidth = 100;
+    
+            doc.line(centerX - (lineWidth / 2), finalY, centerX + (lineWidth / 2), finalY);
             doc.setFontSize(10);
             doc.text('Signature of Person Responsible for taking Inventory', centerX, finalY + 6, { align: 'center' });
-            
-            // Add signature value if provided
+    
             if (signatureName) {
                 doc.setFont('helvetica', 'italic');
                 doc.setFontSize(12);
                 doc.text(signatureName, centerX, finalY - 2, { align: 'center' });
-                doc.setFont('helvetica', 'normal');
             }
-            
-            // Print name line
-            doc.line(centerX - (lineWidth/2), finalY + 20, centerX + (lineWidth/2), finalY + 20);
+    
+            doc.line(centerX - (lineWidth / 2), finalY + 20, centerX + (lineWidth / 2), finalY + 20);
             doc.setFontSize(10);
             doc.text('Print Name of Person Responsible for taking Inventory', centerX, finalY + 26, { align: 'center' });
-            
-            // Add print name value if provided
+    
             if (printName) {
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(12);
                 doc.text(printName, centerX, finalY + 18, { align: 'center' });
             }
-            
-            // Convert PDF to base64 string
-            const pdfData = doc.output('datauristring');
-            resolve(pdfData);
+    
+            // ✅ Create pure base64 string from PDF arraybuffer
+            const pdfArrayBuffer = doc.output('arraybuffer');
+            const base64Data = btoa(
+                Array.from(new Uint8Array(pdfArrayBuffer))
+                    .map(char => String.fromCharCode(char))
+                    .join('')
+            );
+    
+            // Resolve base64 string back to caller
+            resolve(base64Data);
+    
         } catch (error) {
-            console.error("Error generating PDF data:", error);
+            console.error("PDF generation for email failed:", error);
             reject(error);
         }
     }
+    
     
     // // Event listeners
     // document.querySelector("#filter_btn").addEventListener("click", () => {
