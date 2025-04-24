@@ -210,8 +210,16 @@ def email_pdf_report(pdf_data=None, file_name=None, from_date=None, class_name=N
             file_name = "inventory_report.pdf"
         
         # Remove the data URI prefix to get just the base64 data
+        base64_data = pdf_data
         if "data:application/pdf;base64," in pdf_data:
-            pdf_data = pdf_data.split("data:application/pdf;base64,")[1]
+            base64_data = pdf_data.split("data:application/pdf;base64,")[1]
+        
+        # Import base64 to decode the data
+        import base64
+        from io import BytesIO
+        
+        # Decode base64 to binary
+        pdf_binary = base64.b64decode(base64_data)
         
         # Prepare email subject
         class_text = f"Class {class_name}" if class_name and class_name != "All Classes" else "All Classes"
@@ -224,15 +232,26 @@ def email_pdf_report(pdf_data=None, file_name=None, from_date=None, class_name=N
         <p>This is an automated email from the pharmacy inventory system.</p>
         """
         
-        # Send email with attachment
+        # Create a temporary file if needed for attachment
+        from frappe.utils.file_manager import save_file
+        
+        # Save as a file in Frappe
+        file_doc = save_file(
+            file_name, 
+            pdf_binary, 
+            "User", 
+            user,
+            is_private=1
+        )
+        
+        # Send email with the file attachment
         frappe.sendmail(
             recipients=user_email,
             subject=subject,
             message=content,
             attachments=[{
                 "fname": file_name,
-                "fcontent": pdf_data,
-                "is_b64_encoded": True
+                "fcontent": pdf_binary
             }]
         )
         
