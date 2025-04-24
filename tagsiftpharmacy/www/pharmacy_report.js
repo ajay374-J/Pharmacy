@@ -927,17 +927,17 @@ async function populateClassOptions() {
         }
     }
     
-    // Event listeners
-    document.querySelector("#filter_btn").addEventListener("click", () => {
-        const from_date = document.querySelector("#from_date").value;
-        const class_name = document.querySelector("#class_name").value;
+    // // Event listeners
+    // document.querySelector("#filter_btn").addEventListener("click", () => {
+    //     const from_date = document.querySelector("#from_date").value;
+    //     const class_name = document.querySelector("#class_name").value;
         
-        if (!from_date) {
-            frappe.msgprint("Please select a date");
-            return;
-        }
-        fetchItems(from_date, class_name);
-    });
+    //     if (!from_date) {
+    //         frappe.msgprint("Please select a date");
+    //         return;
+    //     }
+    //     fetchItems(from_date, class_name);
+    // });
     
     // Add event listener for date change to automatically fetch data
     document.querySelector("#from_date").addEventListener("change", handleDateChange);
