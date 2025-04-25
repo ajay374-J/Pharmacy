@@ -8,7 +8,7 @@ def get_class_options():
     """
     try:
         # Fetch all classes from the Class doctype
-        classes = frappe.get_all("Class", fields=["name"])
+        classes = frappe.get_all("Class", fields=["name"], order_by="name asc")
         return classes
     except Exception as e:
         frappe.log_error(f"Error fetching class options: {str(e)}")
