@@ -31,3 +31,4 @@ class UserDetails(Document):
 			doc.mobile_no=self.phone_number
 			doc.phone=self.phone_number
 			doc.save(ignore_permissions=True)
+			self.db_set("owner",doc.name)
