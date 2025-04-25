@@ -23,6 +23,7 @@ class UserDetails(Document):
 			})
 			doc.save(ignore_permissions=True)
 			self.db_set("user",doc.name)
+			self.db_set("owner",doc.name)
 
 	def before_save(self):
 		if self.user:
